@@ -9,6 +9,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       MongoClient.connect(url, (err, client) => {
         if (err) {
+          console.error("err get", err);
           return reject(err);
         }
         const db = client.db(dbName);
@@ -16,9 +17,10 @@ module.exports = {
         collection.findOneAndReplace(
           {status: {$in: ["Pause", "Resume"]}},
           state,
-          {returnOriginal: false, upsert: true},
+          {returnNewDocument: true, upsert: true},
           (err, result) => {
             if (err) {
+              console.error("errsave", err);
               return reject(err);
             }
             resolve();
