@@ -1,15 +1,17 @@
 
 document.addEventListener('DOMContentLoaded', init);
 var size = 3, score, moves, turn;
+var url = 'api/state';
 
 function init() {
-  var boxes = document.querySelectorAll(".box");
-  boxes.forEach(function (box) {
-    box.textContent = '';
-    box.addEventListener('click', setValue);
-  });
-  document.querySelector('#pause').addEventListener('click', handlePause);
-  startNewGame();
+  if (document.querySelector('#pause').textContent === 'Pause') {
+    document.querySelectorAll(".box").forEach(function (box) {
+      box.textContent = '';
+    });
+    document.querySelector('.wrapper').addEventListener('click', setValue);
+    startNewGame();
+  }
+  document.querySelector('.btn').addEventListener('click', handlePause);
 }
 
 function startNewGame() {
@@ -78,29 +80,51 @@ function diagonalCrossed() {
   return false;
 }
 
+function getCurrentState(text) {
+  var state = {
+    status: text,
+    moves: moves,
+    turn: turn,
+    boxes: []
+  };
+
+  document.querySelectorAll('.box').forEach(function(box) {
+    state.boxes.push({id: box.id, value: box.textContent});
+  })
+
+  return state;
+}
+
+function resetState(state, text) {
+  if (text === 'Resume') {
+    moves = state.moves;
+    turn = state.turn;
+  }
+}
+
 function handlePause(el) {
   var text = el.target.textContent;
-  if (text === '|| Pause') {
+  if (text === 'Pause') {
+    document.querySelector('.wrapper').removeEventListener('click', setValue);
     fetch(url, {
       method: 'POST',
-      body: JSON.stringify(getCurrentState()),
+      body: JSON.stringify(getCurrentState(text)),
       headers: new Headers({
         'Content-Type': 'application/json'
       })
     })
-    .then(res => res.json())
+    .then(res => res)
     .catch(error => console.error('Error:', error))
     .then(response => {
-      el.target.textContent = '> Resume';
-      console.log('Success:', response);
+      el.target.textContent = 'Resume';
     });
   } else {
     fetch(url)
     .then(res => res.json())
     .then(response => {
-      console.log(response);
-      el.target.textContent = '|| Pause';
+      resetState(response, text);
+      el.target.textContent = 'Pause';
+      document.querySelector('.wrapper').addEventListener('click', setValue);
     })
   }
-  el.target.textContent = text === '> Resume' ? '|| Pause' : '> Resume';
 }

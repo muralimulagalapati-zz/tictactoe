@@ -1,0 +1,29 @@
+
+block css
+  link(rel='stylesheet', href='/stylesheets/main.css')
+block content
+  if state && state.status === 'Pause'
+    .wrapper
+      each obj in state.boxes
+        .box(id=obj.id) #{obj.value}
+    .btn
+      button#pause Resume
+  else
+    .wrapper
+      .box#00
+      .box#01
+      .box#02
+
+      .box#10
+      .box#11
+      .box#12
+
+      .box#20
+      .box#21
+      .box#22
+    .btn
+      button#pause Pause
+
+block scripts
+  script(src='/javascripts/main.js')
+
